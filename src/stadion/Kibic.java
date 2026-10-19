@@ -1,13 +1,18 @@
 package stadion;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * Pojedynczy kibic - osobny watek, ktory przechodzi cala sciezke na stadion:
+ * przyjscie, kolejka, kontrola, mecz, wyjscie.
+ */
 public class Kibic extends Thread {
     private final int id;
     private final String druzyna;
     private final StadionMonitor monitor;
-    private int liczbaPrzepuszczen = 0;
-    private String status = "Oczekiwanie na przyjście";
+
+    private volatile int liczbaPrzepuszczen = 0;
+    private volatile String status = "Oczekiwanie na przyjscie";
     private int nrStanowiska = -1;
 
     public Kibic(int id, String druzyna, StadionMonitor monitor) {
@@ -17,6 +22,10 @@ public class Kibic extends Thread {
         this.monitor = monitor;
     }
 
+    /**
+     * Sen podzielony na krotkie odcinki. Dzieki temu pauza i STOP dzialaja
+     * od razu, a nie dopiero po zakonczeniu calego opoznienia.
+     */
     private void safeSleep(int ms) throws InterruptedException {
         long end = System.currentTimeMillis() + ms;
         while (System.currentTimeMillis() < end) {
@@ -30,30 +39,31 @@ public class Kibic extends Thread {
     @Override
     public void run() {
         try {
-            // Kibice nie przychodzą wszyscy naraz - najpierw jest 0 osób
-            safeSleep(new Random().nextInt(5000));
-            
+            // Kibice nie przychodza wszyscy naraz - najpierw jest 0 osob.
+            safeSleep(ThreadLocalRandom.current().nextInt(5000));
+
             monitor.checkPauseAndStop();
-            
+
             // 1. Kolejka
             status = "W kolejce";
             nrStanowiska = monitor.wejdzDoKolejki(this);
-            
+
             // 2. Kontrola
             status = "Kontrola (St." + (nrStanowiska + 1) + ")";
-            safeSleep(new Random().nextInt(2000) + 1500);
-            
+            safeSleep(ThreadLocalRandom.current().nextInt(2000) + 1500);
+
             // 3. Stadion
             monitor.zwolnijStanowisko(nrStanowiska, this);
             status = "Na stadionie";
-            safeSleep(new Random().nextInt(6000) + 4000);
-            
-            // 4. Wyjście
+            safeSleep(ThreadLocalRandom.current().nextInt(6000) + 4000);
+
+            // 4. Wyjscie
             status = "Wychodzi";
             monitor.opuscStadion();
             status = "Poza stadionem";
 
         } catch (InterruptedException e) {
+            // STOP albo wylaczenie aplikacji - watek konczy prace bez zwalniania zasobow.
             status = "Zatrzymany";
         }
     }
@@ -62,6 +72,7 @@ public class Kibic extends Thread {
         this.liczbaPrzepuszczen++;
     }
 
+    public int getIdKibica() { return id; }
     public int getLiczbaPrzepuszczen() { return liczbaPrzepuszczen; }
     public String getDruzyna() { return druzyna; }
     public String getStatus() { return status; }
