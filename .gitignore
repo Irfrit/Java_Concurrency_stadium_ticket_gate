@@ -1,0 +1,28 @@
+# Kompilacja
+out/
+build/
+bin/
+target/
+*.class
+*.jar
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+.vscode/
+
+# System
+.DS_Store
+Thumbs.db
+
+# ODT - pliki tymczasowe i blokady
+~$*
+.lock
+
+# Sprawozdanie trzymam poza repozytorium
+*.odt
