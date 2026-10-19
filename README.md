@@ -89,5 +89,4 @@ docs/zrzut-ekranu.png            zrzut działającego programu
 - STOP przerywa wątki w połowie pracy, więc licznik osób na stadionie nie schodzi do zera; nie ma to
   znaczenia, bo następny START zaczyna od nowego monitora.
 - Plik z parametrami jest nadpisywany przez `Properties.store()`, więc własne komentarze w nim przepadają.
-- Rozmiar tabeli przyjmuje maksymalnie 300 kibiców — więcej wierszy przestaje być czytelne, a o to
-  chodzi w pierwszym wymaganiu zadania.
+
